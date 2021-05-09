@@ -1,4 +1,5 @@
 const Book = require('../models/Book');
+const { validationResult } = require('express-validator');
 
 const getAll = async (req, res) => {
     try {
@@ -14,10 +15,14 @@ const getAll = async (req, res) => {
     }
 }
 
-// @desc   Add book
-// @route  POST /books
-const addbook = async(req, res) => {
+const createBook = async(req, res) => {
     try {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
+
         const newBook = await Book.create(req.body);
     
         return res.status(201).json({
@@ -43,5 +48,5 @@ const addbook = async(req, res) => {
 
 module.exports = {
     getAll,
-    addbook
+    createBook,
 }
