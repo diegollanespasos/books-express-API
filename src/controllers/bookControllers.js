@@ -16,15 +16,26 @@ const getByGuid = async(req, res) => {
 
 const getAll = async (req, res) => {
     try {
+        const queries = Object.keys(req.query);
+
+        if(queries.length === 0){
+            const allBooks = await Book.find();
+
+            return res.status(200).send({
+                books: allBooks
+            })
+        }
+
         const { title, author, year, tags } = req.query;
         const allBooks = await Book.find({$or:[{title: title},{author: author}, {year: year},{tags: tags}]});
-
+        const filteredBooks = allBooks.filter(book => queries.every(val => String(book[val]) === req.query[val]));
+        
         return res.status(200).send({
-            books: allBooks
+            books: filteredBooks
         })
 
     } catch(e) {
-        return res.status(500).send('Server error')
+        return res.status(500).send('Server error');
     }
 }
 
