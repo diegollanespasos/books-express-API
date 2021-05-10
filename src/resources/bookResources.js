@@ -4,7 +4,7 @@ const { BookControllers } = require('../controllers');
 const { BookValidations } = require('../validations');
 
 BookResources.get('/', BookControllers.getAll);
-//UserResources.get('/:guid', UserControllers.getByGuid);
+BookResources.get('/:guid', BookControllers.getByGuid);
 BookResources.post('/', BookValidations.createBook(), BookControllers.createBook);
 BookResources.put('/:guid', BookValidations.updateBook(), BookControllers.updateBook);
 BookResources.delete('/:guid', BookControllers.deleteBook);

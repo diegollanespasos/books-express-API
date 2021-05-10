@@ -1,17 +1,30 @@
 const Book = require('../models/Book');
 const { validationResult } = require('express-validator');
 
+const getByGuid = async(req, res) => {
+    try {
+        const { guid } = req.params;
+        const book = await Book.findById(guid);
+        res.status(200).send(book);
+
+    } catch(e){
+        return res.status(404).send({
+            message: 'Book not found'
+        })
+    }
+  };
+
 const getAll = async (req, res) => {
     try {
-        const books = await Book.find();
+        const { title, author, year, tags } = req.query;
+        const allBooks = await Book.find({$or:[{title: title},{author: author}, {year: year},{tags: tags}]});
 
-        return res.status(200).json({
-            message: 'Retreived the user',
-            data: books
+        return res.status(200).send({
+            books: allBooks
         })
 
     } catch(e) {
-        return res.status(404).send('Users nt found')
+        return res.status(500).send('Server error')
     }
 }
 
@@ -81,29 +94,22 @@ const updateBook = async(req, res) => {
 const deleteBook = async(req, res) => {
     try {
         const { guid } = req.params;
-        const book = await Book.findById(guid);
+        const deletedBook = await Book.findByIdAndDelete(guid);
 
-        if(!book){
-            return res.status(404).send({
-                message: 'Book not found'
-            })
-        }
-
-        await book.remove();
         return res.status(200).send({
             message: 'Book deleted',
-            GUID: book._id
+            GUID: deletedBook._id
         })
 
     } catch(e) {
-        console.log(e.message);
-        return res.status(500).send({
-            message: 'Server Error'
+        return res.status(404).send({
+            message: 'Book not found'
         })
     }
 }
 
 module.exports = {
+    getByGuid,
     getAll,
     createBook,
     updateBook,
