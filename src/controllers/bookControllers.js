@@ -14,7 +14,7 @@ const getByGuid = async(req, res) => {
     }
   };
 
-const getAll = async (req, res) => {
+const getByParams = async (req, res) => {
     try {
         const queries = Object.keys(req.query);
 
@@ -28,11 +28,20 @@ const getAll = async (req, res) => {
 
         const { title, author, year, tags } = req.query;
         const allBooks = await Book.find({$or:[{title: title},{author: author}, {year: year},{tags: tags}]});
-        const filteredBooks = allBooks.filter(book => queries.every(val => String(book[val]) === req.query[val]));
-        
-        return res.status(200).send({
-            books: filteredBooks
-        })
+
+        if(typeof tags === 'undefined'){
+            const filteredBooks = allBooks.filter(book => queries.every(val => String(book[val]) === req.query[val]));        
+            return res.status(200).send({
+                books: filteredBooks
+            })
+        } else {
+            const queriesWithoutTags = queries.filter(value => value !== 'tags'); 
+            const filteredBooks = allBooks.filter(book => queriesWithoutTags.every(val => String(book[val]) === req.query[val])).filter(book => book.tags.includes(tags));        
+  
+            return res.status(200).send({
+                books: filteredBooks
+            })
+        }
 
     } catch(e) {
         return res.status(500).send('Server error');
@@ -121,7 +130,7 @@ const deleteBook = async(req, res) => {
 
 module.exports = {
     getByGuid,
-    getAll,
+    getByParams,
     createBook,
     updateBook,
     deleteBook
